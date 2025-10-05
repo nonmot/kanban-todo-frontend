@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import apiClient from "./apiClient";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -17,14 +18,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       authorize: async (credentials) => {
-        const res = await fetch("http://localhost:8000/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: credentials.email, password: credentials.password, })
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        return { ...data.user, appJwt: data.token };
+        try {
+          const res = await apiClient("api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: credentials.email, password: credentials.password })
+          });
+
+          if (!res.ok) return null;
+
+          const data = await res.data;
+          return { ...data.user, appJwt: data.token };
+        } catch (error) {
+          console.error(error);
+          return null;
+        }
       }
     })
   ],
@@ -33,10 +41,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if ((user as any)?.appJwt) {
         token.appJwt = (user as any).appJwt;
       }
+      console.log(token);
       return token;
     },
     async session({ session, token }) {
       (session as any).appJwt = token.appJwt;
+      (session as any).id = token.sub;
+      console.log(session)
       return session;
     }
   }
