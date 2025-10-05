@@ -11,8 +11,6 @@ export default function TodoList() {
   const [todos, setTodos] = useState([]);
 
   const { data: session, status } = useSession();
-  console.log(session);
-  console.log(`status: ${status}`)
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/api/auth/signin");
@@ -23,16 +21,20 @@ export default function TodoList() {
 
     let mounted = true;
     const fetchTodos = async () => {
-      const res = await apiClient(`api/todos/all/${(session as any).id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${(session as any).appJwt}`,
-        }
-      });
-      if (res.status === 401 || res.status === 403) router.push("/api/auth/signin");
-      const data = await res.data;
-      if (mounted) setTodos(data);
+      try {
+        const res = await apiClient(`api/todos/all/${session.user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.accessToken}`,
+          }
+        });
+        if (res.status === 401 || res.status === 403) router.push("/api/auth/signin");
+        const data = await res.data;
+        if (mounted) setTodos(data);
+      } catch (error) {
+        console.error(error);
+      }
     }
 
     fetchTodos();
@@ -43,8 +45,6 @@ export default function TodoList() {
 
   if (status === "loading") return <p>Loading...</p>
   if (status === "unauthenticated") return null;
-
-  console.log(todos)
 
   return (
     <div>

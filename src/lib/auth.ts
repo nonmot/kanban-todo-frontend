@@ -1,6 +1,29 @@
-import NextAuth from "next-auth";
+import NextAuth, { type DefaultSession } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import apiClient from "./apiClient";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"]
+    accessToken?: string;
+  }
+
+  interface User {
+    id: string;
+    accessToken?: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    sub?: string;
+    accessToken?: string;
+  }
+}
+
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -18,36 +41,43 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       authorize: async (credentials) => {
-        try {
-          const res = await apiClient("api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: credentials.email, password: credentials.password })
-          });
+        const email = credentials?.email as string | undefined;
+        const password = credentials?.password as string | undefined;
+        if (!email || !password) return null;
 
-          if (!res.ok) return null;
+        const res = await apiClient("api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: credentials.email, password: credentials.password })
+        });
 
-          const data = await res.data;
-          return { ...data.user, appJwt: data.token };
-        } catch (error) {
-          console.error(error);
-          return null;
-        }
+        if (!res.ok) return null;
+
+        const data = await res.data;
+        if (!data?.user?.id) return null;
+
+        return {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          accessToken: data.token,
+        };
       }
     })
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if ((user as any)?.appJwt) {
-        token.appJwt = (user as any).appJwt;
+      if (user) {
+        token.sub = user.id;
+        token.accessToken = user.accessToken;
       }
-      console.log(token);
       return token;
     },
-    async session({ session, token }) {
-      (session as any).appJwt = token.appJwt;
-      (session as any).id = token.sub;
-      console.log(session)
+    async session({ session, token, user }) {
+      if (session.user) {
+        (session.user as any).id = token.sub as string | undefined;
+      }
+      session.accessToken = token.accessToken as string | undefined;
       return session;
     }
   }
