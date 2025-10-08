@@ -24,6 +24,14 @@ declare module "next-auth/jwt" {
   }
 }
 
+type Login = {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  token: string;
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -45,7 +53,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        const res = await apiClient("api/auth/login", {
+        const res = await apiClient<Login>("api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: credentials.email, password: credentials.password })
@@ -53,7 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!res.ok) return null;
 
-        const data = await res.data;
+        const data = res.data;
         if (!data?.user?.id) return null;
 
         return {
@@ -73,7 +81,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.sub as string | undefined;
       }
