@@ -4,7 +4,7 @@ export type Todo = {
   title: string;
   content: string;
   status: "TODO" | "IN_PROGRESS" | "COMPLETED",
-  authorId: "string";
+  authorId: string;
   deadline: string;
   createdAt: string;
   updatedAt: string;

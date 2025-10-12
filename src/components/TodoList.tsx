@@ -4,6 +4,8 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Todo } from "@/app/types/todo";
+import TodoCard from "./TodoCard";
+import TodoForm from "./TodoForm";
 
 export default function TodoList() {
 
@@ -42,21 +44,67 @@ export default function TodoList() {
     fetchTodos();
   }, [status, session?.user]);
 
+  const removeTodo = (id: string) => {
+    try {
+      const res = apiClient(`api/todos/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${session?.accessToken}`
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+    setTodos((prev) => prev.filter((x) => x.id !== id));
+  }
+
+  const addTodo = async (todo: Todo) => {
+    try {
+      const res = await apiClient<Todo>(`api/todos/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.accessToken}`
+        },
+        body: JSON.stringify({
+          title: todo.title,
+          status: "TODO",
+          authorId: session?.user.id,
+          content: "",
+          deadline: new Date(Date.now()),
+        })
+      });
+      if (!res.ok) {
+        console.error(res.message);
+      } else {
+        const newTodo = res.data;
+        setTodos([...todos, newTodo]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  
   if (status === "loading") return <p>Loading...</p>
   if (status === "unauthenticated") return null;
 
   return (
     <div>
-      <h2>TODOs</h2>
-      <ul>
-        {todos && todos.map((todo) => {
-          return <li key={todo.id}>
-            {todo.title}
-            <span>{todo.status}</span>
-            <span>{todo.deadline}</span>
-            <span>{todo.content}</span>
-          </li>
-        })}
+      <TodoForm
+        todos={todos}
+        setTodos={setTodos}
+        onCreate={addTodo}
+      />
+      <ul className="divide-y divide-gray-400">
+        {todos && todos.map((todo) => (
+          <TodoCard
+            todo={todo}
+            key={todo.id}
+            onDelete={removeTodo}
+          />
+        ))}
       </ul>
     </div>
   )
