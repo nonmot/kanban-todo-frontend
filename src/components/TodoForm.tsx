@@ -19,12 +19,12 @@ export default function TodoForm(props: Props) {
 	const onSubmit: SubmitHandler<Inputs> = (data) => {
 		const newTodo: Todo = {
 			title: data.title,
-			id: "hoge",
+			id: "test-id",
 			status: "TODO",
-			authorId: "hjoge",
-			deadline: "hoge",
-			createdAt: "hoge",
-			updatedAt: "hoge",
+			authorId: "test-author-id",
+			deadline: "2025-01-01",
+			createdAt: "2025-01-01T00:00:00Z",
+			updatedAt: "2025-01-01T00:00:00Z",
 			content: "",
 		};
 		onCreate(newTodo);

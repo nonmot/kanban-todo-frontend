@@ -1,4 +1,5 @@
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 import type { Todo } from "@/app/types/todo";
 import apiClient from "@/lib/apiClient";
 
@@ -9,22 +10,38 @@ type Props = {
 
 export default function TodoCard(props: Props) {
 	const { data: session } = useSession();
-
 	const { todo, onDelete } = props;
+
+	const [error, setError] = useState<string | null>(null);
 
 	const statuses = ["TODO", "IN_PROGRESS", "COMPLETED"] as Todo["status"][];
 
-	const onStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const _res = apiClient<Todo>(`api/todos/${todo.id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${session?.accessToken}`,
-			},
-			body: JSON.stringify({
-				status: e.target.value,
-			}),
-		});
+	const onStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setError(null);
+
+		const token = session?.accessToken;
+		if (!token) {
+			setError("認証が必要です。サインインしてください。");
+			return;
+		}
+
+		try {
+			const _res = await apiClient<Todo>(`api/todos/${todo.id}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({
+					status: e.target.value,
+				}),
+			});
+			if (!_res?.ok) {
+				setError("更新に失敗しました。");
+			}
+		} catch (_error) {
+			setError("更新に失敗しました。");
+		}
 	};
 
 	return (
@@ -48,6 +65,12 @@ export default function TodoCard(props: Props) {
 					>
 						削除
 					</button>
+
+					{error && (
+						<p role="alert" className="text-sm text-red-600">
+							{error}
+						</p>
+					)}
 				</div>
 			</div>
 		</li>
