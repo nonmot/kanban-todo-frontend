@@ -1,8 +1,8 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import type { User } from "next-auth";
 import { useState } from "react";
+import { SignOutButton } from "./signout-button";
 
 type Props = {
 	user: User;
@@ -36,12 +36,7 @@ export default function UserDropMenu(props: Props) {
 				<div className="absolute overflow-hidden right-16 border border-gray-200 shadow-lg px-3 py-2 rounded-lg">
 					<p className="font-medium my-1">{user.name}</p>
 					<div className="border-t border-gray-300" />
-					<Link
-						href="/api/auth/signout"
-						className="cursor-pointer block text-red-500 my-1"
-					>
-						Logout
-					</Link>
+          <SignOutButton />
 				</div>
 			) : undefined}
 		</div>
