@@ -34,7 +34,7 @@ describe("Header (Server component)", () => {
 		expect(screen.getByRole("link", { name: "機能" })).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "料金" })).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "FAQ" })).toBeInTheDocument();
-		expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
 	});
 
 	test("ログイン時: /todosへのリンク、UserDropMenuが表示される", async () => {
@@ -49,7 +49,7 @@ describe("Header (Server component)", () => {
 
 		expect(screen.getByTestId("user-menu")).toHaveTextContent("Tester");
 		expect(
-			screen.queryByRole("link", { name: "Sign in" }),
+			screen.queryByRole("button", { name: "Sign in" }),
 		).not.toBeInTheDocument();
 	});
 });

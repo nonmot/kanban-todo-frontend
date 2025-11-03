@@ -36,7 +36,7 @@ export default function UserDropMenu(props: Props) {
 				<div className="absolute overflow-hidden right-16 border border-gray-200 shadow-lg px-3 py-2 rounded-lg">
 					<p className="font-medium my-1">{user.name}</p>
 					<div className="border-t border-gray-300" />
-          <SignOutButton />
+					<SignOutButton />
 				</div>
 			) : undefined}
 		</div>

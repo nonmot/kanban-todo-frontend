@@ -15,6 +15,7 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@/lib/auth$': '<rootDir>/test/__mocks__/auth.ts',
     '^next-auth$': '<rootDir>/test/__mocks__/next-auth.ts',
+    '^next-auth/react$': '<rootDir>/test/__mocks__/next-auth-react.ts',
   },
 }
  

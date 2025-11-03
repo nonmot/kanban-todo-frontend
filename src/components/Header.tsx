@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import UserDropMenu from "./UserDropMenu";
 import { SignInButton } from "./signin-button";
+import UserDropMenu from "./UserDropMenu";
 
 export default async function Header() {
 	const session = await auth();
@@ -31,7 +31,7 @@ export default async function Header() {
 							<Link href="#faq" className="hover:text-gray-600">
 								FAQ
 							</Link>
-              <SignInButton />
+							<SignInButton />
 						</nav>
 					</div>
 				)}
