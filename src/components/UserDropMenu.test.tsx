@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { User } from "next-auth";
+import { signOut } from "next-auth/react";
 import UserDropMenu from "./UserDropMenu";
 
 describe("UserDropMenu (Client Component)", () => {
@@ -10,13 +11,17 @@ describe("UserDropMenu (Client Component)", () => {
 		email: "tester@example.com",
 	};
 
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
 	test("初期表示でメニューが表示されない", () => {
 		render(<UserDropMenu user={baseUser} />);
 
 		expect(screen.getByRole("button")).toBeInTheDocument();
 		expect(screen.queryByText("Tester")).not.toBeInTheDocument();
 		expect(
-			screen.queryByRole("link", { name: "Logout" }),
+			screen.queryByRole("button", { name: "Sign Out" }),
 		).not.toBeInTheDocument();
 	});
 
@@ -26,8 +31,10 @@ describe("UserDropMenu (Client Component)", () => {
 		await userEvent.click(screen.getByRole("button"));
 
 		expect(screen.getByText("Tester")).toBeInTheDocument();
-		const logoutLink = screen.getByRole("link", { name: "Logout" });
-		expect(logoutLink).toHaveAttribute("href", "/api/auth/signout");
+		const logoutButton = screen.getByRole("button", { name: "Sign Out" });
+		expect(logoutButton).toBeInTheDocument();
+		await userEvent.click(logoutButton);
+		expect(signOut).toHaveBeenCalledWith({ redirectTo: "/" });
 	});
 
 	test("二度クリックするとメニューが閉じる", async () => {
