@@ -15,11 +15,9 @@ jest.mock("@/components/TodoList", () => ({
 }));
 
 describe("Todos Page (Client Component)", () => {
-	test("SessionProvider 配下で TodoList を描画する", () => {
+	test("TodoList を描画する", () => {
 		render(<Page />);
 
-		const wrapper = screen.getByTestId("session-provider");
-		expect(wrapper).toBeInTheDocument();
 		expect(screen.getByTestId("todo-list")).toBeInTheDocument();
 
 		const container = screen.getByTestId("todo-list").parentElement;
